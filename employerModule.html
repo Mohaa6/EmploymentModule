@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSIS - Job Search Information System</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f72585;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: var(--dark);
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .module-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .module-btn {
+            padding: 0.75rem 1.5rem;
+            background-color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .module-btn:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+        
+        .module-btn:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .module-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .module {
+            display: none;
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .module.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        form {
+            display: grid;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .card p {
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        
+        .card .meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #777;
+        }
+        
+        .card .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .card .actions button {
+            flex: 1;
+        }
+        
+        .card .actions button.secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-bar input {
+            flex: 1;
+        }
+        
+        .filter-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-options select {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .match-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .match-high {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .match-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-applied {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-interview {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-hired {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Job Search Information System (JSIS)</h1>
+        <nav>
+            <a href="#" class="nav-link" data-module="jobseeker">Job Seeker</a>
+            <a href="#" class="nav-link" data-module="employer">Employer</a>
+            <a href="#" class="nav-link" data-module="admin">Admin</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="module-selector">
+            <button class="module-btn active" data-module="jobseeker">Job Seeker</button>
+            <button class="module-btn" data-module="employer">Employer</button>
+            <button class="module-btn" data-module="admin">Admin</button>
+        </div>
+
+        <!-- Job Seeker Module -->
+        <div id="jobseeker-module" class="module active">
+            <section id="profile-section">
+                <h2>My Profile</h2>
+                <form id="profile-form">
+                    <div>
+                        <label for="seeker-name">Full Name</label>
+                        <input type="text" id="seeker-name" value="John Doe" required>
+                    </div>
+                    <div>
+                        <label for="seeker-email">Email</label>
+                        <input type="email" id="seeker-email" value="john.doe@example.com" required>
+                    </div>
+                    <div>
+                        <label for="seeker-skills">Skills (comma separated)</label>
+                        <textarea id="seeker-skills" required>JavaScript, React, Node.js, Python, SQL</textarea>
+                    </div>
+                    <div>
+                        <label for="seeker-resume">Upload Resume</label>
+                        <input type="file" id="seeker-resume">
+                    </div>
+                    <button type="submit">Update Profile</button>
+                </form>
+            </section>
+
+            <section id="jobs-section">
+                <h2>Recommended Jobs</h2>
+                <div class="search-bar">
+                    <input type="text" id="job-search" placeholder="Search jobs...">
+                    <button id="search-btn">Search</button>
+                </div>
+                <div class="filter-options">
+                    <select id="job-location">
+                        <option value="">All Locations</option>
+                        <option value="remote">Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                        <option value="new-york">New York</option>
+                        <option value="san-francisco">San Francisco</option>
+                    </select>
+                    <select id="job-salary">
+                        <option value="">All Salary Ranges</option>
+                        <option value="50k">$50,000+</option>
+                        <option value="80k">$80,000+</option>
+                        <option value="100k">$100,000+</option>
+                    </select>
+                    <select id="job-type">
+                        <option value="">All Job Types</option>
+                        <option value="full-time">Full-time</option>
+                        <option value="part-time">Part-time</option>
+                        <option value="contract">Contract</option>
+                    </select>
+                </div>
+                <div id="job-listings">
+                    <!-- Job cards will be inserted here by JavaScript -->
+                </div>
+            </section>
+
+            <section id="applications-section">
+                <h2>My Applications</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Date Applied</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applications-list">
+                        <!-- Applications will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- Employer Module -->
+        <div id="employer-module" class="module">
+            <section id="post-job-section">
+                <h2>Post a New Job</h2>
+                <form id="job-post-form">
+                    <div>
+                        <label for="job-title">Job Title</label>
+                        <input type="text" id="job-title" placeholder="Software Engineer" required>
+                    </div>
+                    <div>
+                        <label for="job-description">Job Description</label>
+                        <textarea id="job-description" required></textarea>
+                    </div>
+                    <div>
+                        <label for="job-requirements">Requirements</label>
+                        <textarea id="job-requirements" required>Bachelor's degree in Computer Science or related field\n3+ years of experience with JavaScript\nExperience with React or similar frameworks</textarea>
+                    </div>
+                    <div>
+                        <label for="job-skills">Required Skills (comma separated)</label>
+                        <input type="text" id="job-skills" value="JavaScript, React, Node.js, HTML, CSS" required>
+                    </div>
+                    <div>
+                        <label for="job-location">Location</label>
+                        <select id="job-location" required>
+                            <option value="remote">Remote</option>
+                            <option value="hybrid">Hybrid</option>
+                            <option value="new-york">New York</option>
+                            <option value="san-francisco">San Francisco</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="job-salary">Salary Range</label>
+                        <input type="text" id="job-salary" placeholder="$80,000 - $100,000" required>
+                    </div>
+                    <div>
+                        <label for="job-type">Job Type</label>
+                        <select id="job-type" required>
+                            <option value="full-time">Full-time</option>
+                            <option value="part-time">Part-time</option>
+                            <option value="contract">Contract</option>
+                        </select>
+                    </div>
+                    <button type="submit">Post Job</button>
+                </form>
+            </section>
+
+            <section id="candidates-section">
+                <h2>Applicants</h2>
+                <div class="search-bar">
+                    <input type="text" id="candidate-search" placeholder="Search candidates...">
+                    <button id="candidate-search-btn">Search</button>
+                </div>
+                <div class="filter-options">
+                    <select id="candidate-status">
+                        <option value="">All Statuses</option>
+                        <option value="new">New</option>
+                        <option value="reviewed">Reviewed</option>
+                        <option value="interview">Interview Scheduled</option>
+                        <option value="hired">Hired</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <select id="candidate-match">
+                        <option value="">All Match Levels</option>
+                        <option value="high">High (80%+)</option>
+                        <option value="medium">Medium (60-79%)</option>
+                        <option value="low">Low (&lt;60%)</option>
+                    </select>
+                </div>
+                <div id="candidates-list">
+                    <!-- Candidate cards will be inserted here by JavaScript -->
+                </div>
+            </section>
+
+            <section id="employer-analytics-section">
+                <h2>Hiring Analytics</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Jobs Posted</h3>
+                        <p>15</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Applications Received</h3>
+                        <p>243</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Candidates Hired</h3>
+                        <p>8</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg. Time-to-Hire</h3>
+                        <p>22 days</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Top Skills in Applicants</h3>
+                    <p>JavaScript (78%), React (65%), Python (52%), SQL (48%)</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Admin Module -->
+        <div id="admin-module" class="module">
+            <section id="users-section">
+                <h2>User Management</h2>
+                <div class="search-bar">
+                    <input type="text" id="user-search" placeholder="Search users...">
+                    <button id="user-search-btn">Search</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list">
+                        <!-- Users will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="jobs-admin-section">
+                <h2>Job Listings Management</h2>
+                <div class="search-bar">
+                    <input type="text" id="admin-job-search" placeholder="Search jobs...">
+                    <button id="admin-job-search-btn">Search</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Title</th>
+                            <th>Company</th>
+                            <th>Posted Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-jobs-list">
+                        <!-- Jobs will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="reports-section">
+                <h2>System Reports</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p>1,243</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Employers</h3>
+                        <p>156</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Jobs Posted (30 days)</h3>
+                        <p>342</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Successful Hires</h3>
+                        <p>87</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>System Status</h3>
+                    <p>All systems operational</p>
+                    <p>Last backup: Today, 03:00 AM</p>
+                </div>
+                <div class="card">
+                    <h3>Recent Activity</h3>
+                    <ul id="activity-log" style="list-style-type: none;">
+                        <!-- Activity log will be inserted here by JavaScript -->
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for the system
+        const sampleJobs = [
+            {
+                id: 1,
+                title: "Frontend Developer (React)",
+                company: "TechCorp",
+                location: "Remote",
+                salary: "$90,000 - $110,000",
+                type: "Full-time",
+                description: "We're looking for an experienced React developer to join our team...",
+                skills: ["JavaScript", "React", "HTML", "CSS"],
+                posted: "2023-05-15",
+                match: 92
+            },
+            {
+                id: 2,
+                title: "Data Scientist",
+                company: "DataSystems",
+                location: "San Francisco",
+                salary: "$120,000 - $150,000",
+                type: "Full-time",
+                description: "Join our data science team to work on cutting-edge ML models...",
+                skills: ["Python", "Machine Learning", "SQL", "Pandas"],
+                posted: "2023-05-18",
+                match: 85
+            },
+            {
+                id: 3,
+                title: "UX Designer",
+                company: "CreativeLabs",
+                location: "Hybrid",
+                salary: "$80,000 - $95,000",
+                type: "Full-time",
+                description: "We need a creative UX designer to improve our product interfaces...",
+                skills: ["Figma", "UI/UX", "Prototyping", "User Research"],
+                posted: "2023-05-20",
+                match: 78
+            }
+        ];
+
+        const sampleApplications = [
+            {
+                jobId: 1,
+                jobTitle: "Frontend Developer (React)",
+                company: "TechCorp",
+                appliedDate: "2023-05-16",
+                status: "Interview Scheduled"
+            },
+            {
+                jobId: 3,
+                jobTitle: "UX Designer",
+                company: "CreativeLabs",
+                appliedDate: "2023-05-21",
+                status: "Under Review"
+            }
+        ];
+
+        const sampleCandidates = [
+            {
+                id: 101,
+                name: "Jane Smith",
+                skills: ["Python", "Data Analysis", "Machine Learning"],
+                match: 95,
+                appliedDate: "2023-05-17",
+                status: "New",
+                resume: "jane_smith_resume.pdf"
+            },
+            {
+                id: 102,
+                name: "Mike Johnson",
+                skills: ["JavaScript", "React", "Node.js"],
+                match: 88,
+                appliedDate: "2023-05-18",
+                status: "Reviewed",
+                resume: "mike_johnson_resume.pdf"
+            }
+        ];
+
+        const sampleUsers = [
+            {
+                id: 1001,
+                name: "John Doe",
+                email: "john@example.com",
+                role: "Job Seeker",
+                status: "Active",
+                lastLogin: "2023-05-22"
+            },
+            {
+                id: 2001,
+                name: "TechCorp",
+                email: "hr@techcorp.com",
+                role: "Employer",
+                status: "Verified",
+                lastLogin: "2023-05-21"
+            },
+            {
+                id: 3001,
+                name: "Admin User",
+                email: "admin@jsis.com",
+                role: "Admin",
+                status: "Active",
+                lastLogin: "2023-05-22"
+            }
+        ];
+
+        const sampleAdminJobs = [
+            {
+                id: "J001",
+                title: "Frontend Developer",
+                company: "TechCorp",
+                postedDate: "2023-05-15",
+                status: "Active",
+                applications: 24
+            },
+            {
+                id: "J002",
+                title: "Data Scientist",
+                company: "DataSystems",
+                postedDate: "2023-05-18",
+                status: "Active",
+                applications: 18
+            },
+            {
+                id: "J003",
+                title: "UX Designer",
+                company: "CreativeLabs",
+                postedDate: "2023-05-20",
+                status: "Flagged",
+                applications: 12
+            }
+        ];
+
+        const sampleActivities = [
+            "New job posted: Backend Developer at DevSolutions",
+            "User registered: Sarah Williams (Job Seeker)",
+            "Company verified: AnalyticsPro",
+            "Job flagged for review: Senior Product Manager at TechStart",
+            "System backup completed successfully"
+        ];
+
+        // DOM Elements
+        const moduleBtns = document.querySelectorAll('.module-btn');
+        const modules = document.querySelectorAll('.module');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // Job Seeker Elements
+        const jobListings = document.getElementById('job-listings');
+        const applicationsList = document.getElementById('applications-list');
+
+        // Employer Elements
+        const candidatesList = document.getElementById('candidates-list');
+
+        // Admin Elements
+        const usersList = document.getElementById('users-list');
+        const adminJobsList = document.getElementById('admin-jobs-list');
+        const activityLog = document.getElementById('activity-log');
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load job seeker data by default
+            renderJobListings(sampleJobs);
+            renderApplications(sampleApplications);
+            
+            // Load employer data
+            renderCandidates(sampleCandidates);
+            
+            // Load admin data
+            renderUsers(sampleUsers);
+            renderAdminJobs(sampleAdminJobs);
+            renderActivityLog(sampleActivities);
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Module switching
+            moduleBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const moduleId = this.getAttribute('data-module');
+                    switchModule(moduleId);
+                });
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const moduleId = this.getAttribute('data-module');
+                    switchModule(moduleId);
+                });
+            });
+
+            // Job Seeker Form Submission
+            document.getElementById('profile-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Profile updated successfully!');
+            });
+
+            // Employer Form Submission
+            document.getElementById('job-post-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Job posted successfully!');
+            });
+
+            // Search functionality
+            document.getElementById('search-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('job-search').value.toLowerCase();
+                const filteredJobs = sampleJobs.filter(job => 
+                    job.title.toLowerCase().includes(searchTerm) || 
+                    job.company.toLowerCase().includes(searchTerm) ||
+                    job.skills.some(skill => skill.toLowerCase().includes(searchTerm))
+                );
+                renderJobListings(filteredJobs);
+            });
+
+            document.getElementById('candidate-search-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('candidate-search').value.toLowerCase();
+                const filteredCandidates = sampleCandidates.filter(candidate => 
+                    candidate.name.toLowerCase().includes(searchTerm) ||
+                    candidate.skills.some(skill => skill.toLowerCase().includes(searchTerm))
+                );
+                renderCandidates(filteredCandidates);
+            });
+
+            document.getElementById('user-search-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('user-search').value.toLowerCase();
+                const filteredUsers = sampleUsers.filter(user => 
+                    user.name.toLowerCase().includes(searchTerm) ||
+                    user.email.toLowerCase().includes(searchTerm) ||
+                    user.role.toLowerCase().includes(searchTerm)
+                );
+                renderUsers(filteredUsers);
+            });
+        }
+
+        function switchModule(moduleId) {
+            // Update active button
+            moduleBtns.forEach(btn => {
+                if (btn.getAttribute('data-module') === moduleId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Update active module
+            modules.forEach(module => {
+                if (module.id === `${moduleId}-module`) {
+                    module.classList.add('active');
+                } else {
+                    module.classList.remove('active');
+                }
+            });
+
+            // Update active nav link
+            navLinks.forEach(link => {
+                if (link.getAttribute('data-module') === moduleId) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        function renderJobListings(jobs) {
+            jobListings.innerHTML = '';
+            jobs.forEach(job => {
+                const jobCard = document.createElement('div');
+                jobCard.className = 'card';
+                jobCard.innerHTML = `
+                    <h3>${job.title}</h3>
+                    <p><strong>Company:</strong> ${job.company}</p>
+                    <p><strong>Location:</strong> ${job.location}</p>
+                    <p><strong>Salary:</strong> ${job.salary}</p>
+                    <p><strong>Job Type:</strong> ${job.type}</p>
+                    <p>${job.description.substring(0, 100)}...</p>
+                    <div class="meta">
+                        <span class="match-badge ${job.match > 85 ? 'match-high' : 'match-medium'}">Match: ${job.match}%</span>
+                        <span>Posted: ${job.posted}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="secondary">View Details</button>
+                        <button>Apply Now</button>
+                    </div>
+                `;
+                jobListings.appendChild(jobCard);
+            });
+        }
+
+        function renderApplications(applications) {
+            applicationsList.innerHTML = '';
+            applications.forEach(app => {
+                const row = document.createElement('tr');
+                
+                // Determine status badge class
+                let statusClass = 'status-applied';
+                if (app.status.includes('Interview')) statusClass = 'status-interview';
+                else if (app.status.includes('Hired')) statusClass = 'status-hired';
+                else if (app.status.includes('Rejected')) statusClass = 'status-rejected';
+                
+                row.innerHTML = `
+                    <td>${app.jobTitle}</td>
+                    <td>${app.company}</td>
+                    <td>${app.appliedDate}</td>
+                    <td><span class="status-badge ${statusClass}">${app.status}</span></td>
+                    <td>
+                        <button class="secondary">View</button>
+                        <button>Withdraw</button>
+                    </td>
+                `;
+                applicationsList.appendChild(row);
+            });
+        }
+
+        function renderCandidates(candidates) {
+            candidatesList.innerHTML = '';
+            candidates.forEach(candidate => {
+                const candidateCard = document.createElement('div');
+                candidateCard.className = 'card';
+                candidateCard.innerHTML = `
+                    <h3>${candidate.name}</h3>
+                    <p><strong>Skills:</strong> ${candidate.skills.join(', ')}</p>
+                    <div class="meta">
+                        <span class="match-badge ${candidate.match > 85 ? 'match-high' : 'match-medium'}">Match: ${candidate.match}%</span>
+                        <span>Applied: ${candidate.appliedDate}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="secondary">View Resume</button>
+                        <button>Schedule Interview</button>
+                    </div>
+                `;
+                candidatesList.appendChild(candidateCard);
+            });
+        }
+
+        function renderUsers(users) {
+            usersList.innerHTML = '';
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>${user.status}</td>
+                    <td>
+                        ${user.role === 'Job Seeker' ? '<button class="secondary">View</button>' : ''}
+                        ${user.role === 'Employer' && user.status !== 'Verified' ? '<button>Verify</button>' : ''}
+                        <button class="${user.status === 'Banned' ? 'secondary' : ''}">
+                            ${user.status === 'Banned' ? 'Unban' : 'Ban'}
+                        </button>
+                    </td>
+                `;
+                usersList.appendChild(row);
+            });
+        }
+
+        function renderAdminJobs(jobs) {
+            adminJobsList.innerHTML = '';
+            jobs.forEach(job => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${job.id}</td>
+                    <td>${job.title}</td>
+                    <td>${job.company}</td>
+                    <td>${job.postedDate}</td>
+                    <td>${job.status}</td>
+                    <td>
+                        <button class="secondary">View</button>
+                        ${job.status === 'Flagged' ? '<button>Review</button>' : ''}
+                        <button>${job.status === 'Active' ? 'Deactivate' : 'Activate'}</button>
+                    </td>
+                `;
+                adminJobsList.appendChild(row);
+            });
+        }
+
+        function renderActivityLog(activities) {
+            activityLog.innerHTML = '';
+            activities.forEach(activity => {
+                const item = document.createElement('li');
+                item.innerHTML = `
+                    <p>${new Date().toLocaleDateString()} - ${activity}</p>
+                `;
+                activityLog.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>
